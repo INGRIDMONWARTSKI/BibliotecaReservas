@@ -2,8 +2,11 @@ package biblioteca;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Reserva {
+
     private final String codigo;
     private final Estudiante estudiante;
     private final LocalDate fecha;
@@ -11,11 +14,15 @@ public class Reserva {
     private final int duracionHoras;
     private final int cantidadPersonas;
     private final Sala sala;
+
     private EstadoReserva estado;
+
+    private final List<ObservadorReserva> observadores = new ArrayList<>();
 
     Reserva(String codigo, Estudiante estudiante, LocalDate fecha,
             LocalTime horaInicio, int duracionHoras,
             int cantidadPersonas, Sala sala) {
+
         this.codigo = codigo;
         this.estudiante = estudiante;
         this.fecha = fecha;
@@ -26,21 +33,70 @@ public class Reserva {
         this.estado = new Pendiente();
     }
 
-    public String getCodigo() { return codigo; }
-    public Estudiante getEstudiante() { return estudiante; }
-    public LocalDate getFecha() { return fecha; }
-    public LocalTime getHoraInicio() { return horaInicio; }
-    public int getDuracionHoras() { return duracionHoras; }
-    public int getCantidadPersonas() { return cantidadPersonas; }
-    public Sala getSala() { return sala; }
-    public String getNombreEstado() { return estado.nombre(); }
+    public String getCodigo() {
+        return codigo;
+    }
 
-    public void confirmar() { estado.confirmar(this); }
-    public void cancelar() { estado.cancelar(this); }
-    public void finalizar() { estado.finalizar(this); }
+    public Estudiante getEstudiante() {
+        return estudiante;
+    }
+
+    public LocalDate getFecha() {
+        return fecha;
+    }
+
+    public LocalTime getHoraInicio() {
+        return horaInicio;
+    }
+
+    public int getDuracionHoras() {
+        return duracionHoras;
+    }
+
+    public int getCantidadPersonas() {
+        return cantidadPersonas;
+    }
+
+    public Sala getSala() {
+        return sala;
+    }
+
+    public String getNombreEstado() {
+        return estado.nombre();
+    }
+
+    public void confirmar() {
+        estado.confirmar(this);
+    }
+
+    public void cancelar() {
+        estado.cancelar(this);
+    }
+
+    public void finalizar() {
+        estado.finalizar(this);
+    }
+
+    public void agregarObservador(ObservadorReserva observador) {
+        if (observador != null) {
+            observadores.add(observador);
+        }
+    }
+
+    public void retirarObservador(ObservadorReserva observador) {
+        observadores.remove(observador);
+    }
 
     void cambiarEstado(EstadoReserva nuevoEstado) {
+        String anterior = estado.nombre();
+
         this.estado = nuevoEstado;
+
+        String actual = estado.nombre();
+
+        for (ObservadorReserva observador : List.copyOf(observadores)) {
+            observador.actualizar(this, anterior, actual);
+        }
     }
 
     @Override
