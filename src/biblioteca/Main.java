@@ -1,3 +1,4 @@
+
 package biblioteca;
 
 import java.time.LocalDate;
@@ -34,14 +35,14 @@ public class Main {
                 observadores
         );
 
-        // Mostrar salas
+        // Mostrar salas disponibles
         System.out.println("\n--- SALAS DISPONIBLES ---");
 
         for (Sala sala : repositorioSalas.obtenerDisponibles()) {
             System.out.println(sala);
         }
 
-        // Prueba 1: Strategy por capacidad
+        // PRUEBA 1: Seleccion por capacidad
         System.out.println("\n--- PRUEBA 1: SELECCION POR CAPACIDAD ---");
 
         Optional<Sala> salaCapacidad =
@@ -51,7 +52,7 @@ public class Main {
         System.out.println("Sala seleccionada: "
                 + salaCapacidad.orElse(null));
 
-        // Prueba 2: Strategy sala preferida
+        // PRUEBA 2: Sala preferida
         System.out.println("\n--- PRUEBA 2: SALA PREFERIDA ---");
 
         Optional<Sala> salaPreferida =
@@ -61,7 +62,7 @@ public class Main {
         System.out.println("Sala seleccionada: "
                 + salaPreferida.orElse(null));
 
-        // Prueba 3: Sala insuficiente
+        // PRUEBA 3: Capacidad insuficiente
         System.out.println("\n--- PRUEBA 3: CAPACIDAD INSUFICIENTE ---");
 
         Optional<Sala> salaInsuficiente =
@@ -71,7 +72,7 @@ public class Main {
         System.out.println("Resultado esperado: vacio");
         System.out.println("Resultado obtenido: " + salaInsuficiente);
 
-        // Prueba 4: Builder con datos incompletos
+        // PRUEBA 4: Builder invalido
         System.out.println("\n--- PRUEBA 4: BUILDER INVALIDO ---");
 
         try {
@@ -81,7 +82,7 @@ public class Main {
             System.out.println("Validacion correcta: " + e.getMessage());
         }
 
-        // Prueba 5: Crear reserva con Facade
+        // PRUEBA 5: Crear reserva con Facade
         System.out.println("\n--- PRUEBA 5: CREAR RESERVA ---");
 
         Optional<Reserva> resultado = facade.realizarReserva(
@@ -101,7 +102,7 @@ public class Main {
             System.out.println("Estado actual: "
                     + reserva.getNombreEstado());
 
-            // Prueba 6: Intentar confirmar nuevamente
+            // PRUEBA 6: Confirmar otra vez
             System.out.println("\n--- PRUEBA 6: CONFIRMAR OTRA VEZ ---");
 
             try {
@@ -111,7 +112,7 @@ public class Main {
                 System.out.println("Validacion correcta: " + e.getMessage());
             }
 
-            // Prueba 7: Cancelar reserva
+            // PRUEBA 7: Cancelar reserva
             System.out.println("\n--- PRUEBA 7: CANCELAR ---");
 
             reserva.cancelar();
@@ -119,7 +120,7 @@ public class Main {
             System.out.println("Estado actual: "
                     + reserva.getNombreEstado());
 
-            // Prueba 8: Intentar finalizar una cancelada
+            // PRUEBA 8: Finalizar una cancelada
             System.out.println("\n--- PRUEBA 8: FINALIZAR CANCELADA ---");
 
             try {
@@ -130,7 +131,7 @@ public class Main {
             }
         }
 
-        // Prueba 9: Crear segunda reserva
+        // PRUEBA 9: Segunda reserva
         System.out.println("\n--- PRUEBA 9: SEGUNDA RESERVA ---");
 
         Optional<Reserva> segunda = facade.realizarReserva(
@@ -148,7 +149,7 @@ public class Main {
 
             System.out.println("Reserva creada: " + reserva2);
 
-            // Prueba 10: Finalizar reserva confirmada
+            // PRUEBA 10: Finalizar reserva confirmada
             System.out.println("\n--- PRUEBA 10: FINALIZAR ---");
 
             reserva2.finalizar();
@@ -157,7 +158,7 @@ public class Main {
                     + reserva2.getNombreEstado());
         }
 
-        // Prueba 11: Revisar reservas guardadas
+        // PRUEBA 11: Revisar repositorio
         System.out.println("\n--- PRUEBA 11: REPOSITORIO ---");
 
         System.out.println("Total de reservas guardadas: "
@@ -165,6 +166,70 @@ public class Main {
 
         for (Reserva reserva : repositorioReservas.obtenerTodas()) {
             System.out.println(reserva);
+        }
+
+        // P02: Construccion sin estudiante
+        System.out.println("\n--- P02: SIN ESTUDIANTE ---");
+
+        try {
+            new ReservaBuilder()
+                    .fecha(LocalDate.now().plusDays(1))
+                    .horaInicio(LocalTime.of(9, 0))
+                    .duracionHoras(1)
+                    .cantidadPersonas(2)
+                    .sala(repositorioSalas.obtenerDisponibles().get(0))
+                    .build();
+
+            System.out.println("P02 FALLIDA");
+
+        } catch (IllegalStateException e) {
+            System.out.println("P02 APROBADA: " + e.getMessage());
+        }
+
+        // P09: Confirmar una reserva cancelada
+        System.out.println("\n--- P09: CONFIRMAR CANCELADA ---");
+
+        if (resultado.isPresent()) {
+
+            Reserva reservaCancelada = resultado.get();
+
+            try {
+                reservaCancelada.confirmar();
+                System.out.println("P09 FALLIDA");
+
+            } catch (IllegalStateException e) {
+                System.out.println("P09 APROBADA: " + e.getMessage());
+                System.out.println("Estado: "
+                        + reservaCancelada.getNombreEstado());
+            }
+
+        } else {
+            System.out.println("P09 NO EJECUTADA: no se creo la reserva.");
+        }
+
+        // P10: Solicitud para 10 personas
+        System.out.println("\n--- P10: DIEZ PERSONAS ---");
+
+        int antes = repositorioReservas.obtenerTodas().size();
+
+        Optional<Reserva> prueba10 = facade.realizarReserva(
+                estudiante,
+                LocalDate.now().plusDays(3),
+                LocalTime.of(10, 0),
+                2,
+                10,
+                new SeleccionPorCapacidad()
+        );
+
+        int despues = repositorioReservas.obtenerTodas().size();
+
+        System.out.println("Reservas antes: " + antes);
+        System.out.println("Reservas despues: " + despues);
+
+        if (prueba10.isEmpty() && antes == despues) {
+            System.out.println("P10 APROBADA: no se creo la reserva.");
+        } else {
+            System.out.println("P10 FALLIDA");
         }
 
         System.out.println("\n=== FIN DE LAS PRUEBAS ===");
