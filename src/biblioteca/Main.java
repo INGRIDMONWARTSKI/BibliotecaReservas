@@ -13,5 +13,20 @@ public class Main {
 
         System.out.println("Salas de la biblioteca:");
         salas.forEach(System.out::println);
+        EstrategiaSeleccionSala porCapacidad = new SeleccionPorCapacidad();
+
+System.out.println("Para 4 personas: "
+        + porCapacidad.seleccionar(salas, 4).orElse(null));
+
+EstrategiaSeleccionSala preferida = new SeleccionSalaPreferida("C");
+
+System.out.println("Preferida C: "
+        + preferida.seleccionar(salas, 4).orElse(null));
+
+EstrategiaSeleccionSala preferidaNoAdecuada =
+        new SeleccionSalaPreferida("B");
+
+System.out.println("Preferida B para 7: "
+        + preferidaNoAdecuada.seleccionar(salas, 7).orElse(null));
     }
 }
